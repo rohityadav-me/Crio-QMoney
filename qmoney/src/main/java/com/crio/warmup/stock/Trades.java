@@ -13,7 +13,7 @@ public class Trades {
         this.symbol = symbol;
         this.quantity = quantity;
         this.tradeType = tradeType;
-        this.purchaseDate = purchaseDate;
+        this.purchaseDate = purchaseDate; 
     }
 
     @Override

@@ -1,28 +1,28 @@
 
 package com.crio.warmup.stock;
 
-// import com.crio.warmup.stock.dto.*;
+import com.crio.warmup.stock.dto.*;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-// import java.nio.file.Files;
+import java.nio.file.Files;
 import java.nio.file.Paths;
-// import java.time.LocalDate;
-// import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-// import java.util.Collections;
-// import java.util.Comparator;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
-// import java.util.stream.Collectors;
-// import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
-// import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 
 public class PortfolioManagerApplication {
@@ -63,6 +63,11 @@ public class PortfolioManagerApplication {
 
 
 
+
+
+  // TODO: CRIO_TASK_MODULE_REST_API
+  //  Find out the closing price of each stock on the end_date and return the list
+  //  of all symbols in ascending order by its close value on end date.
 
   // Note:
   // 1. You may have to register on Tiingo to get the api_token.
@@ -137,14 +142,65 @@ public class PortfolioManagerApplication {
   // Note:
   // Remember to confirm that you are getting same results for annualized returns as in Module 3.
 
+  public static List<String> mainReadQuotes(String[] args) throws IOException, URISyntaxException {
+     List<PortfolioTrade> portfolioList = readTradesFromJson(args[0]);
+     String url;
+     RestTemplate rest = new RestTemplate();
+     List<TotalReturnsDto> totalReturns = new ArrayList<>();
+     for(PortfolioTrade trade: portfolioList){
+       if(LocalDate.parse(args[1]).isAfter(trade.getPurchaseDate())){
+        url = prepareUrl(trade, LocalDate.parse(args[1]), "70174bd8193b978cf4c76d93f2dc23b8144747eb");
+        TiingoCandle[] tiingo = rest.getForObject(url,TiingoCandle[].class);
+        if(tiingo.length>0){
+          totalReturns.add(new TotalReturnsDto(trade.getSymbol(),tiingo[tiingo.length-1].getClose()));
+        }
+      }else throw new RuntimeException();
+     }
+      // Comparator<TotalReturnsDto> comparator = Comparator.comparing(TotalReturnsDto::getClosingPrice);
+      return totalReturns.stream().sorted((a1,a2)-> Double.valueOf(a1.getClosingPrice() -a2.getClosingPrice()).intValue())
+      .map(e -> e.getSymbol()).collect(Collectors.toList());
+  }
+
+  // TODO:
+  //  After refactor, make sure that the tests pass by using these two commands
+  //  ./gradlew test --tests PortfolioManagerApplicationTest.readTradesFromJson
+  //  ./gradlew test --tests PortfolioManagerApplicationTest.mainReadFile
+  public static List<PortfolioTrade> readTradesFromJson(String filename) throws IOException, URISyntaxException {
+    File file = resolveFileFromResources(filename);
+    ObjectMapper object = getObjectMapper();
+    PortfolioTrade[] portfolioTrade = object.readValue(file,PortfolioTrade[].class);  
+    List<PortfolioTrade> portfolioList = new ArrayList<>();
+    for(PortfolioTrade trade : portfolioTrade)
+      portfolioList.add(trade);
+    return portfolioList;
+ }
+
+
+  // TODO:
+  //  Build the Url using given parameters and use this function in your code to cann the API.
+  public static String prepareUrl(PortfolioTrade trade, LocalDate endDate, String token) {
+    return "https://api.tiingo.com/tiingo/daily/"+trade.getSymbol()+"/prices?startDate="+trade.getPurchaseDate()+"&endDate="+endDate+"&token="+token;
+  }
+
+
+
+
+
+
+
+
 
 
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
     ThreadContext.put("runId", UUID.randomUUID().toString());
   
-    printJsonObject(mainReadFile(args));
+    // printJsonObject(mainReadFile(args));
 
+
+
+
+    printJsonObject(mainReadQuotes(args));
 
 
   }
