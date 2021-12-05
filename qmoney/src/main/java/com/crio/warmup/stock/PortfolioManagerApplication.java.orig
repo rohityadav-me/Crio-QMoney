@@ -1,11 +1,16 @@
 
 package com.crio.warmup.stock;
 
+<<<<<<< HEAD
+import com.crio.warmup.stock.dto.*;
+import com.crio.warmup.stock.log.UncaughtExceptionHandler;
+=======
 
 import com.crio.warmup.stock.dto.*;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.crio.warmup.stock.portfolio.PortfolioManager;
 import com.crio.warmup.stock.portfolio.PortfolioManagerFactory;
+>>>>>>> 223df6eb56da41e7403b5f62dc90604554a16a2c
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
@@ -13,6 +18,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+<<<<<<< HEAD
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
@@ -20,6 +26,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+=======
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+>>>>>>> 223df6eb56da41e7403b5f62dc90604554a16a2c
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +43,7 @@ import org.springframework.web.client.RestTemplate;
 
 public class PortfolioManagerApplication {
 
+<<<<<<< HEAD
   // TODO: CRIO_TASK_MODULE_JSON_PARSING
   //  Task:
   //       - Read the json file provided in the argument[0], The file is available in the classpath.
@@ -72,10 +84,16 @@ public class PortfolioManagerApplication {
   // Note:
   // 1. You may need to copy relevant code from #mainReadQuotes to parse the Json.
   // 2. Remember to get the latest quotes from Tiingo API.
+=======
+>>>>>>> 223df6eb56da41e7403b5f62dc90604554a16a2c
 
 
 
 
+
+
+
+<<<<<<< HEAD
   // TODO: CRIO_TASK_MODULE_REST_API
   //  Find out the closing price of each stock on the end_date and return the list
   //  of all symbols in ascending order by its close value on end date.
@@ -153,16 +171,28 @@ public class PortfolioManagerApplication {
     return "70174bd8193b978cf4c76d93f2dc23b8144747eb";
   }
 
+=======
+
+
+
+
+
+
+
+
+
 
   // TODO: CRIO_TASK_MODULE_REFACTOR
   //  Once you are done with the implementation inside PortfolioManagerImpl and
   //  PortfolioManagerFactory, create PortfolioManager using PortfolioManagerFactory.
   //  Refer to the code from previous modules to get the List<PortfolioTrades> and endDate, and
   //  call the newly implemented method in PortfolioManager to calculate the annualized returns.
+>>>>>>> 223df6eb56da41e7403b5f62dc90604554a16a2c
 
   // Note:
   // Remember to confirm that you are getting same results for annualized returns as in Module 3.
 
+<<<<<<< HEAD
   public static List<String> mainReadQuotes(String[] args) throws IOException, URISyntaxException {
      List<PortfolioTrade> portfolioList = readTradesFromJson(args[0]);
      String url;
@@ -266,27 +296,34 @@ public class PortfolioManagerApplication {
       Double years = ChronoUnit.DAYS.between(trade.getPurchaseDate(), endDate)/365.00;
       double annualized_returns = (Math.pow(1+totalReturn, (1/years)))-1;
       return new AnnualizedReturn(trade.getSymbol(),annualized_returns,totalReturn);
-      }
-
+=======
   public static List<AnnualizedReturn> mainCalculateReturnsAfterRefactor(String[] args)
       throws Exception {
        String file = args[0];
        LocalDate endDate = LocalDate.parse(args[1]);
-      //  String contents = readFileAsString(file);
+       String contents = readFileAsString(file);
        ObjectMapper objectMapper = getObjectMapper();
-      //  return PortfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
-      return Collections.emptyList();
+       return portfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
+>>>>>>> 223df6eb56da41e7403b5f62dc90604554a16a2c
   }
 
 
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
     ThreadContext.put("runId", UUID.randomUUID().toString());
+<<<<<<< HEAD
   
     // printJsonObject(mainReadFile(args));
     // printJsonObject(mainReadQuotes(args));
-    // printJsonObject(mainCalculateSingleReturn(args));
+      printJsonObject(mainCalculateSingleReturn(args));
+
+=======
+
+
+
+
     printJsonObject(mainCalculateReturnsAfterRefactor(args));
+>>>>>>> 223df6eb56da41e7403b5f62dc90604554a16a2c
   }
 }
 
