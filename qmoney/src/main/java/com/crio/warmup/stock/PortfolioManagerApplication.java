@@ -286,7 +286,7 @@ public class PortfolioManagerApplication {
     // printJsonObject(mainReadFile(args));
     // printJsonObject(mainReadQuotes(args));
     // printJsonObject(mainCalculateSingleReturn(args));
-    printJsonObject(mainCalculateReturnsAfterRefactor(args));
+    // printJsonObject(mainCalculateReturnsAfterRefactor(args));
   }
 }
 
