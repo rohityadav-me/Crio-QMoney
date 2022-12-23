@@ -8,6 +8,8 @@ import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.dto.TiingoCandle;
+import com.crio.warmup.stock.quotes.StockQuoteServiceFactory;
+import com.crio.warmup.stock.quotes.StockQuotesService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -15,9 +17,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,12 +31,18 @@ import org.springframework.web.client.RestTemplate;
 public class PortfolioManagerImpl implements PortfolioManager {
 
 
-  public RestTemplate restTemplate;
+  private RestTemplate restTemplate;
+  private StockQuotesService stockQuotesService;
+
 
   // Caution: Do not delete or modify the constructor, or else your build will break!
   // This is absolutely necessary for backward compatibility
   protected PortfolioManagerImpl(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
+  }
+
+  public PortfolioManagerImpl(StockQuotesService stockQuotesService){
+    this.stockQuotesService = stockQuotesService;
   }
 
 
@@ -89,13 +97,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
 
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException {
-     String response = restTemplate.getForObject(buildUri(symbol, from, to), String.class);
-     ObjectMapper objectMapper = new ObjectMapper();
-     objectMapper.registerModule(new JavaTimeModule());
-     Candle[] result = objectMapper.readValue(response, TiingoCandle[].class);
-     if(result == null)
-        return new ArrayList<>();
-      return Arrays.asList(result);
+     return stockQuotesService.getStockQuote(symbol, from, to);
   }
 
   protected String buildUri(String symbol, LocalDate startDate, LocalDate endDate) {
@@ -103,4 +105,12 @@ public class PortfolioManagerImpl implements PortfolioManager {
             + "startDate="+startDate+"&endDate="+endDate+"&token=70174bd8193b978cf4c76d93f2dc23b8144747eb";
             return uriTemplate;
   }
+
+
+  // ¶TODO: CRIO_TASK_MODULE_ADDITIONAL_REFACTOR
+  //  Modify the function #getStockQuote and start delegating to calls to
+  //  stockQuoteService provided via newly added constructor of the class.
+  //  You also have a liberty to completely get rid of that function itself, however, make sure
+  //  that you do not delete the #getStockQuote function.
+
 }
