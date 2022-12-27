@@ -55,10 +55,6 @@ public class AlphavantageService implements StockQuotesService {
   //  2. Use this method in #getStockQuote.
   public static final String TOKEN = "HE6O5LIKNVC3ZKTO";
   public static final String FUNCTION = "TIME_SERIES_DAILY";
-  public static final String apiError = "{\"Information\": \"The **demo** API key is for demo purposes only. "
-  + "Please claim your free API key at (https://www.alphavantage.co/support/#api-key) to "
-  + "explore our full API offerings. It takes fewer than 20 seconds, and we are committed to "
-  + "making it free forever.\"}";
   private RestTemplate restTemplate;
   public AlphavantageService(RestTemplate restTemplate){
     this.restTemplate = restTemplate;
@@ -66,30 +62,34 @@ public class AlphavantageService implements StockQuotesService {
   @Override
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException, StockQuoteServiceException {
-    String url = buildUri(symbol);
-    String apiResponse = restTemplate.getForObject(url, String.class);
-    System.out.println(apiResponse);
-    if(apiError.equals(apiResponse))
-        throw new StockQuoteServiceException("Rate limit");
-    // AlphavantageDailyResponse apiResponse = restTemplate.getForObject(url, AlphavantageDailyResponse.class);
-
-    ObjectMapper mapper = new ObjectMapper();
-    // SimpleModule simpleModule = new SimpleModule();
-    // simpleModule.addKeyDeserializer(AlphavantageDailyResponse.class, new AlphavantageKeyDeserializer());
-    // mapper.registerModule(simpleModule);
-    // AlphavantageDailyResponse res = mapper.readValue(apiResponse, AlphavantageDailyResponse.class);
-    mapper.registerModule(new JavaTimeModule());
-    Map<LocalDate, AlphavantageCandle> dailyResponse = mapper.readValue(apiResponse,AlphavantageDailyResponse.class).getCandles();
-    // Map<LocalDate, AlphavantageCandle> dailyResponse = apiResponse.getCandles();
     List<Candle> stocks = new ArrayList<>();
-    for(LocalDate date = from;!date.isAfter(to);date = date.plusDays(1)){
-      AlphavantageCandle candle = dailyResponse.get(date);
-      if(candle!=null){
-        candle.setDate(date);
-        stocks.add(candle);
+    try{
+        String url = buildUri(symbol);
+        String apiResponse = restTemplate.getForObject(url, String.class);
+        System.out.println(apiResponse);
+        // AlphavantageDailyResponse apiResponse = restTemplate.getForObject(url, AlphavantageDailyResponse.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        // SimpleModule simpleModule = new SimpleModule();
+        // simpleModule.addKeyDeserializer(AlphavantageDailyResponse.class, new AlphavantageKeyDeserializer());
+        // mapper.registerModule(simpleModule);
+        // AlphavantageDailyResponse res = mapper.readValue(apiResponse, AlphavantageDailyResponse.class);
+        mapper.registerModule(new JavaTimeModule());
+        Map<LocalDate, AlphavantageCandle> dailyResponse = mapper.readValue(apiResponse,AlphavantageDailyResponse.class).getCandles();
+        // Map<LocalDate, AlphavantageCandle> dailyResponse = apiResponse.getCandles();
+      
+        for(LocalDate date = from;!date.isAfter(to);date = date.plusDays(1)){
+          AlphavantageCandle candle = dailyResponse.get(date);
+          if(candle!=null){
+            candle.setDate(date);
+            stocks.add(candle);
+          }
+        }
+      }catch(NullPointerException e){
+        throw new StockQuoteServiceException("Alphavantage returned invalid reponse",e.getCause());
       }
-    }
     return stocks;
+    
   }
 
   protected String buildUri(String symbol){

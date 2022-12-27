@@ -25,10 +25,15 @@ public class TiingoService implements StockQuotesService {
   @Override
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException, StockQuoteServiceException {
-        String response = restTemplate.getForObject(buildUri(symbol, from, to), String.class);
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        Candle[] result = objectMapper.readValue(response, TiingoCandle[].class);
+        Candle[] result = null;
+        try{
+            String response = restTemplate.getForObject(buildUri(symbol, from, to), String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            result = objectMapper.readValue(response, TiingoCandle[].class);
+        }catch(NullPointerException e){
+          throw new StockQuoteServiceException("Error with Tiingo API",e.getCause());
+        }
         if(result == null)
            return new ArrayList<>();
          return Arrays.asList(result);
