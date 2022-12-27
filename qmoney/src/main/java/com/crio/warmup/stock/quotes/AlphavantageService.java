@@ -7,6 +7,7 @@ import java.io.IOException;
 import com.crio.warmup.stock.dto.AlphavantageCandle;
 import com.crio.warmup.stock.dto.AlphavantageDailyResponse;
 import com.crio.warmup.stock.dto.Candle;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
@@ -54,15 +55,22 @@ public class AlphavantageService implements StockQuotesService {
   //  2. Use this method in #getStockQuote.
   public static final String TOKEN = "HE6O5LIKNVC3ZKTO";
   public static final String FUNCTION = "TIME_SERIES_DAILY";
+  public static final String apiError = "{\"Information\": \"The **demo** API key is for demo purposes only. "
+  + "Please claim your free API key at (https://www.alphavantage.co/support/#api-key) to "
+  + "explore our full API offerings. It takes fewer than 20 seconds, and we are committed to "
+  + "making it free forever.\"}";
   private RestTemplate restTemplate;
   public AlphavantageService(RestTemplate restTemplate){
     this.restTemplate = restTemplate;
   }
   @Override
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
-      throws JsonProcessingException {
+      throws JsonProcessingException, StockQuoteServiceException {
     String url = buildUri(symbol);
     String apiResponse = restTemplate.getForObject(url, String.class);
+    System.out.println(apiResponse);
+    if(apiError.equals(apiResponse))
+        throw new StockQuoteServiceException("Rate limit");
     // AlphavantageDailyResponse apiResponse = restTemplate.getForObject(url, AlphavantageDailyResponse.class);
 
     ObjectMapper mapper = new ObjectMapper();

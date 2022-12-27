@@ -8,6 +8,7 @@ import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.dto.TiingoCandle;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
 import com.crio.warmup.stock.quotes.StockQuoteServiceFactory;
 import com.crio.warmup.stock.quotes.StockQuotesService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -74,8 +75,10 @@ public class PortfolioManagerImpl implements PortfolioManager {
           Double years = ChronoUnit.DAYS.between(trade.getPurchaseDate(), endDate)/365.00;
           Double annualized_returns = (Math.pow(1+totalReturn, (1/years)))-1;
           annualizedReturn.add(new AnnualizedReturn(symbol,annualized_returns,totalReturn));
-        } catch (JsonProcessingException e) {
+        } catch (StockQuoteServiceException e) {
           // TODO Auto-generated catch block
+          e.printStackTrace();
+        }catch(JsonProcessingException e){
           e.printStackTrace();
         }
       }
@@ -96,7 +99,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
 
 
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
-      throws JsonProcessingException {
+      throws JsonProcessingException,StockQuoteServiceException {
      return stockQuotesService.getStockQuote(symbol, from, to);
   }
 
